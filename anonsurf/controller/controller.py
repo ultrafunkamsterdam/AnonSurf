@@ -3,8 +3,9 @@ import re
 import sys
 from concurrent.futures import ThreadPoolExecutor
 import subprocess
+from .. import rel_path
 
-DIR_HERE = os.path.abspath(os.path.dirname(__file__))
+DIR_HERE = rel_path(__file__)
 DIR_TOR_DATA = os.path.join(os.path.expanduser("~"), f"._tor_data")
 DEFAULT_PORT = 10080
 
