@@ -17,11 +17,11 @@ if sys.platform == "win32":
 
 def set_proxy_settings(ip: str, port: int, enabled=True):
     if enabled:
-        os.envron['HTTP_PROXY'] = f'127.0.0.1:{PROXY.http_tunnel_port}'
+        os.environ['HTTP_PROXY'] = f'127.0.0.1:{PROXY.http_tunnel_port}'
         os.environ['HTTPS_PROXY'] = f'127.0.0.1:{PROXY.http_tunnel_port}'
         os.environ['SOCKS_PROXY'] = f'127.0.0.1:{PROXY.port}'
     else:
-        os.envron['HTTP_PROXY'] = None
+        os.environ['HTTP_PROXY'] = None
         os.environ['HTTPS_PROXY'] = None
         os.environ['SOCKS_PROXY'] = None
     if sys.platform == 'win32':
