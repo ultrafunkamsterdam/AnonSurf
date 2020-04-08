@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 import subprocess
 from .. import rel_path
 
-DIR_HERE = rel_path(__file__)
+DIR_HERE = rel_path(os.path.relpath(os.path.dirname(__file__)))
 DIR_TOR_DATA = os.path.join(os.path.expanduser("~"), f"._tor_data")
 DEFAULT_PORT = 10080
 
@@ -30,13 +30,14 @@ class Tor(object):
         self.control_port = DEFAULT_PORT + 1
         self.dns_port = DEFAULT_PORT + 2
         # self.torrc = ""
-        self.binary_path = os.path.join(
-            DIR_HERE,
-            "..",
-            "bin",
-            sys.platform,
-            "tor" + ("" if sys.platform != "win32" else ".exe"),
-        )
+        # self.binary_path = os.path.join(
+        #     DIR_HERE,
+        #     "..",
+        #     "bin",
+        #     sys.platform,
+        #     "tor" + ("" if sys.platform != "win32" else ".exe"),
+        # )
+        self.binary_path = rel_path('bin/' + sys.platform + '/' + 'tor' + ('' if sys.platform != 'win32' else '.exe'))
         self.process = None
         self.status_bootstrap = 0
         self.debug = False
