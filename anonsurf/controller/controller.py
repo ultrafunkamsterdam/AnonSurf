@@ -41,7 +41,7 @@ class Tor(object):
 
     def create_config(self, **extra_settings):
         settings = dict(
-            socks5_proxy=f'127.0.0.1:{self.port}',
+            socks_port=self.port,
             http_tunnel_port=self.http_tunnel_port,
             control_port=self.control_port,
             dns_port=self.dns_port,
