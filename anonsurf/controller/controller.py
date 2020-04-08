@@ -1,8 +1,9 @@
 import os
 import re
+import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
-import subprocess
+
 from .. import rel_path
 
 DIR_HERE = rel_path(os.path.relpath(os.path.dirname(__file__)))
@@ -29,14 +30,8 @@ class Tor(object):
         self.port = DEFAULT_PORT
         self.control_port = DEFAULT_PORT + 1
         self.dns_port = DEFAULT_PORT + 2
-        # self.torrc = ""
-        # self.binary_path = os.path.join(
-        #     DIR_HERE,
-        #     "..",
-        #     "bin",
-        #     sys.platform,
-        #     "tor" + ("" if sys.platform != "win32" else ".exe"),
-        # )
+        self.http_tunnel_port = DEFAULT_PORT + 3
+
         self.binary_path = rel_path('bin/' + sys.platform + '/' + 'tor' + ('' if sys.platform != 'win32' else '.exe'))
         self.process = None
         self.status_bootstrap = 0
@@ -46,9 +41,10 @@ class Tor(object):
 
     def create_config(self, **extra_settings):
         settings = dict(
-            socks_port=DEFAULT_PORT,
-            control_port=DEFAULT_PORT + 1,
-            dns_port=DEFAULT_PORT + 2,
+            socks5_proxy=f'127.0.0.1:{self.port}',
+            http_tunnel_port=self.http_tunnel_port,
+            control_port=self.control_port,
+            dns_port=self.dns_port,
             new_circuit_period=15,
             cookie_authentication=1,
             enforce_distinct_subnets=0,

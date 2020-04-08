@@ -1,23 +1,32 @@
-import sys
-import time
-from concurrent import futures
 import os
-
+import sys
+from concurrent import futures
 
 from .. import rel_path
 from ..controller.controller import Tor
+
+PROXY = Tor()
 
 if sys.platform == "win32":
     import ctypes
 
     myappid = __name__
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-    from ..windows_proxy.switch import set_proxy_settings
+    from ..windows_proxy.switch import set_windows_system_proxy
 
-else:
 
-    def set_proxy_settings(ip: str, port: int, enabled=True):
-        pass
+def set_proxy_settings(ip: str, port: int, enabled=True):
+    if enabled:
+        os.envron['HTTP_PROXY'] = f'127.0.0.1:{PROXY.http_tunnel_port}'
+        os.environ['HTTPS_PROXY'] = f'127.0.0.1:{PROXY.http_tunnel_port}'
+        os.environ['SOCKS_PROXY'] = f'127.0.0.1:{PROXY.port}'
+    else:
+        os.envron['HTTP_PROXY'] = None
+        os.environ['HTTPS_PROXY'] = None
+        os.environ['SOCKS_PROXY'] = None
+    if sys.platform == 'win32':
+        return set_windows_system_proxy(ip, port, enabled)
+    return True
 
 
 EXECUTOR = futures.ThreadPoolExecutor(10)
@@ -79,8 +88,6 @@ def start_gui():
         margins=(0, 0),
     )
 
-    PROXY = Tor()
-
     while True:
 
         event, values = P_MAIN_WINDOW.read(50)
@@ -135,17 +142,17 @@ def start_gui():
                     disabled=True, text="setting windows proxy..."
                 )
 
-                windows_proxy_isset = set_proxy_settings(
+                system_proxy_isset = set_proxy_settings(
                     "127.0.0.1", 10080, enabled=True
                 )
 
                 # E_MAIN_BUTTON_START.update(
-                #     text="{0: ^30s}".format(f'Windows proxy has been set: {windows_proxy_isset}'),
+                #     text="{0: ^30s}".format(f'Windows proxy has been set: {system_proxy_isset}'),
                 # )
 
                 _status = "Enabled [!p]"
 
-                if windows_proxy_isset:
+                if system_proxy_isset:
                     _status = "Enabled | click to disable"
 
                 E_MAIN_BUTTON_START.update(
@@ -177,11 +184,11 @@ def start_gui():
                     )
                     E_MAIN_BUTTON_START.update(text=f"Shutting down: {x}%")
 
-                windows_proxy_isset = set_proxy_settings(
+                system_proxy_isset = set_proxy_settings(
                     "127.0.0.1", 10080, enabled=False
                 )
                 _status = "Error windows proxy settings"
-                if windows_proxy_isset:
+                if system_proxy_isset:
                     _status = "Disabled | click to enable"
 
                 E_MAIN_BUTTON_START.update(
@@ -190,7 +197,7 @@ def start_gui():
                     button_color=BUTTON_DISABLED_COLOR,
                 )
 
-    set_proxy_settings("127.0.0.1", 10080, enabled=False)
+    set_windows_system_proxy("127.0.0.1", 10080, enabled=False)
     P_MAIN_WINDOW.close()
     return
     # P_TRAY_MENU.close()

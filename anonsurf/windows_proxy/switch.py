@@ -36,7 +36,7 @@ class INTERNET_PER_CONN_OPTION_LIST(Structure):
     ]
 
 
-def set_proxy_settings(ip, port, enabled=True):
+def set_windows_system_proxy(ip, port, enabled=True):
     if enabled:
         setting = create_unicode_buffer("socks=" + ip + ":" + str(port))
     else:
