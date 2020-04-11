@@ -31,8 +31,8 @@ def set_proxy_settings(ip: str, port: int, enabled=True):
 
 EXECUTOR = futures.ThreadPoolExecutor(10)
 
-IMG_IDLE = rel_path("gui/res/ezgif.com-gif-maker (12).gif")
-IMG_RUNNING = rel_path("gui/res/ezgif.com-gif-maker (13).gif")
+IMG_IDLE = rel_path("gui/res/gfx_disabled_mode.gif")
+IMG_RUNNING = rel_path("gui/res/gfx_enabled_mode.gif")
 
 BUTTON_DISABLED_COLOR = ("#F5F7FA", "#323133")  # 1c1c1c
 BUTTON_ENABLED_COLOR = ("#FFFFFF", "#3C3B3D")  # 1c1c1c
@@ -40,7 +40,6 @@ BUTTON_BOOTSTRAPPING_COLOR = ("#323133", "#E6E9ED")
 
 
 def start_gui():
-
     import PySimpleGUI as sg
     sg.theme("topanga")
 
@@ -197,11 +196,16 @@ def start_gui():
                     button_color=BUTTON_DISABLED_COLOR,
                 )
 
-    set_windows_system_proxy("127.0.0.1", 10080, enabled=False)
     P_MAIN_WINDOW.close()
     return
     # P_TRAY_MENU.close()
 
 
 if __name__ == "__main__":
-    start_gui()
+    try:
+        start_gui()
+    except:
+        raise
+    finally:
+        # make sure the system proxy setting in windows is undone before ending
+        set_windows_system_proxy("127.0.0.1", 10080, enabled=False)
