@@ -1,5 +1,9 @@
+import os
+import sys
 from ctypes import *
 from ctypes.wintypes import *
+
+from ..controller.controller import Tor
 
 LPWSTR = POINTER(WCHAR)
 HINTERNET = LPVOID
@@ -71,4 +75,18 @@ def set_windows_system_proxy(ip, port, enabled=True):
     InternetSetOption(None, INTERNET_OPTION_SETTINGS_CHANGED, None, 0)
     InternetSetOption(None, INTERNET_OPTION_REFRESH, None, 0)
 
+    return True
+
+
+def set_system_proxy(tor: Tor, enabled: bool):
+    if enabled:
+        os.environ['HTTP_PROXY'] = f'127.0.0.1:{tor.http_tunnel_port}'
+        os.environ['HTTPS_PROXY'] = f'127.0.0.1:{tor.http_tunnel_port}'
+        os.environ['SOCKS_PROXY'] = f'127.0.0.1:{tor.port}'
+    else:
+        os.environ['HTTP_PROXY'] = ""
+        os.environ['HTTPS_PROXY'] = ""
+        os.environ['SOCKS_PROXY'] = ""
+    if sys.platform == 'win32':
+        return set_windows_system_proxy("", 0, False)
     return True

@@ -1,5 +1,3 @@
-import os
-import sys
 from concurrent import futures
 
 from .. import rel_path
@@ -7,32 +5,19 @@ from ..controller.controller import Tor
 
 PROXY = Tor()
 
-if sys.platform == "win32":
-    import ctypes
-
-    myappid = __name__
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-    from ..windows_proxy.switch import set_windows_system_proxy
-
-
-def set_proxy_settings(ip: str, port: int, enabled=True):
-    if enabled:
-        os.environ['HTTP_PROXY'] = f'127.0.0.1:{PROXY.http_tunnel_port}'
-        os.environ['HTTPS_PROXY'] = f'127.0.0.1:{PROXY.http_tunnel_port}'
-        os.environ['SOCKS_PROXY'] = f'127.0.0.1:{PROXY.port}'
-    else:
-        os.environ['HTTP_PROXY'] = None
-        os.environ['HTTPS_PROXY'] = None
-        os.environ['SOCKS_PROXY'] = None
-    if sys.platform == 'win32':
-        return set_windows_system_proxy(ip, port, enabled)
-    return True
-
+# if sys.platform == "win32":
+#     import ctypes
+#
+#     myappid = __name__
+#     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+#     from ..system_proxy.__init__ import set_windows_system_proxy
+#
+from ..system_proxy import set_system_proxy
 
 EXECUTOR = futures.ThreadPoolExecutor(10)
 
-IMG_IDLE = rel_path("gui/res/ezgif.com-gif-maker (12).gif")
-IMG_RUNNING = rel_path("gui/res/ezgif.com-gif-maker (13).gif")
+IMG_IDLE = rel_path("gui/res/gfx_mode_disabled.gif")
+IMG_RUNNING = rel_path("gui/res/gfx_mode_enabled.gif")
 
 BUTTON_DISABLED_COLOR = ("#F5F7FA", "#323133")  # 1c1c1c
 BUTTON_ENABLED_COLOR = ("#FFFFFF", "#3C3B3D")  # 1c1c1c
@@ -40,7 +25,6 @@ BUTTON_BOOTSTRAPPING_COLOR = ("#323133", "#E6E9ED")
 
 
 def start_gui():
-
     import PySimpleGUI as sg
     sg.theme("topanga")
 
@@ -88,9 +72,19 @@ def start_gui():
         margins=(0, 0),
     )
 
+    init = True
     while True:
 
         event, values = P_MAIN_WINDOW.read(50)
+        if init:
+            event = 'key_button_start'
+            init = False
+
+        if event != "__TIMEOUT__":
+            print("event:", event)
+
+        if event is None or event == "Exit":
+            break
 
         if not PROXY.running:
             E_MAIN_IMAGE.update_animation(
@@ -101,12 +95,6 @@ def start_gui():
             E_MAIN_IMAGE.update_animation(
                 source=IMG_RUNNING, time_between_frames=25,
             )
-
-        if event != "__TIMEOUT__":
-            print("event:", event)
-
-        if event is None or event == "Exit":
-            break
 
         if event == "key_button_start":
 
@@ -142,15 +130,9 @@ def start_gui():
                     disabled=True, text="setting windows proxy..."
                 )
 
-                system_proxy_isset = set_proxy_settings(
-                    "127.0.0.1", 10080, enabled=True
-                )
+                system_proxy_isset = set_system_proxy(PROXY, enabled=True)
 
-                # E_MAIN_BUTTON_START.update(
-                #     text="{0: ^30s}".format(f'Windows proxy has been set: {system_proxy_isset}'),
-                # )
-
-                _status = "Enabled [!p]"
+                _status = "Enabled | click to disable"
 
                 if system_proxy_isset:
                     _status = "Enabled | click to disable"
@@ -184,10 +166,8 @@ def start_gui():
                     )
                     E_MAIN_BUTTON_START.update(text=f"Shutting down: {x}%")
 
-                system_proxy_isset = set_proxy_settings(
-                    "127.0.0.1", 10080, enabled=False
-                )
-                _status = "Error windows proxy settings"
+                system_proxy_isset = set_system_proxy(PROXY, False)
+
                 if system_proxy_isset:
                     _status = "Disabled | click to enable"
 
@@ -197,11 +177,17 @@ def start_gui():
                     button_color=BUTTON_DISABLED_COLOR,
                 )
 
-    set_windows_system_proxy("127.0.0.1", 10080, enabled=False)
     P_MAIN_WINDOW.close()
     return
-    # P_TRAY_MENU.close()
 
 
 if __name__ == "__main__":
-    start_gui()
+    try:
+        start_gui()
+        # term background process fallback
+        PROXY.process.terminate()
+    except:
+        raise
+    finally:
+        # revert proxy settings fallback
+        set_system_proxy(PROXY, True)
