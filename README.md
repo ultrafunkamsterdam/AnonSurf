@@ -9,7 +9,9 @@ o88o     o8888o o888o o888o `Y8bod8P' o888o o888o 8""88888P'   `V88V"V8P' d888b 
                                                                                      
 ```
 # AnonSurf #
-**Work in Progres! Built exe is downloadable**
+**Work in Progres! built exe for windows:** 
+
+[![Github all releases](https://img.shields.io/github/downloads/Naereen/StrapDown.js/total.svg)](https://github.com/ultrafunkamsterdam/AnonSurf/blob/master/AnonSurf.exe?raw=true)
 
 "Known" from Linux distro's like ParrotSec and Kali, this is a unofficial variant for windows.
 It changes your traffic's source origin address, which makes it harder to trace traffic to you. 
